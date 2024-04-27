@@ -1,6 +1,6 @@
 import cv2
 import os
-from flask import Flask,request,render_template
+from flask import Flask,request,render_template,redirect,url_for,session
 from datetime import date
 from datetime import datetime
 import numpy as np
@@ -11,7 +11,7 @@ import shutil
 
 #### Defining Flask App
 app = Flask(__name__)
-
+app.secret_key = os.urandom(24)
 
 #### Saving Date today in 2 different formats
 datetoday = date.today().strftime("%m_%d_%y")
@@ -155,10 +155,44 @@ def checkUserID(newuserid):
 ################## ROUTING FUNCTIONS #########################
 
 #### Our main page
-@app.route('/')
-def home():
+
+@app.route('/index')
+def base():
     names,rolls,inTimes,outTimes,totalTimes,l = extract_attendance()    
-    return render_template('home.html',names=names,rolls=rolls,inTimes=inTimes,outTimes=outTimes,totalTimes=totalTimes,l=l,totalreg=totalreg(),datetoday2=datetoday2) 
+    return render_template('base.html',names=names,rolls=rolls,inTimes=inTimes,outTimes=outTimes,totalTimes=totalTimes,l=l,totalreg=totalreg(),datetoday2=datetoday2) 
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+
+        if username == 'admin' and password == 'admin123':
+            session['logged_in'] = True  # Set the session variable to indicate login
+            return redirect(url_for('home'))
+        else:
+            return render_template('login.html', error='Invalid credentials')
+
+    return render_template('login.html', error=None)
+
+# @app.route('/home')
+# def home():
+#     names,rolls,inTimes,outTimes,totalTimes,l = extract_attendance()    
+#     return render_template('home.html',names=names,rolls=rolls,inTimes=inTimes,outTimes=outTimes,totalTimes=totalTimes,l=l,totalreg=totalreg(),datetoday2=datetoday2) 
+
+@app.route('/home')
+def home():
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+    # Continue with your normal route logic
+    names, rolls, inTimes, outTimes, totalTimes, l = extract_attendance()
+    return render_template('home.html', names=names, rolls=rolls, inTimes=inTimes, outTimes=outTimes,
+                           totalTimes=totalTimes, l=l, totalreg=totalreg(), datetoday2=datetoday2)
+
+@app.route('/logout')
+def logout():
+    session.pop('logged_in', None)  # Remove the 'logged_in' session variable
+    return redirect(url_for('base'))
 
 @app.route('/listUsers')
 def users():
