@@ -223,42 +223,64 @@ def start():
 
 
 #### This function will run when we add a new user
-@app.route('/add',methods=['GET','POST'])
+@app.route('/addUsers', methods=['GET', 'POST'])
 def add():
-    newusername = request.form['newusername']
-    newuserid = request.form['newuserid']
-    if checkUserID(newuserid) == False:
-        userimagefolder = 'static/faces/'+newusername+'_'+str(newuserid)
-        if not os.path.isdir(userimagefolder):
-            os.makedirs(userimagefolder)
-        cap = cv2.VideoCapture(0)
-        i,j = 0,0
-        while 1:
-            _,frame = cap.read()
-            faces = extract_faces(frame)
-            for (x,y,w,h) in faces:
-                cv2.rectangle(frame,(x, y), (x+w, y+h), (255, 0, 20), 2)
-                cv2.putText(frame,f'Images Captured: {i}/100',(30,30),cv2.FONT_HERSHEY_SIMPLEX,1,(255, 0, 20),2,cv2.LINE_AA)
-                if j%10==0:
-                    name = newusername+'_'+str(i)+'.jpg'
-                    cv2.imwrite(userimagefolder+'/'+name,frame[y:y+h,x:x+w])
-                    i+=1
-                j+=1
-            if j==1000:
-                break
-            cv2.imshow('Adding new User',frame)
-            if cv2.waitKey(1)==27:
-                break
-        cap.release()
-        cv2.destroyAllWindows()
-        print('Training Model')
-        train_model()
-        names,rolls,inTimes,outTimes,totalTimes,l = extract_attendance()    
-        return render_template('home.html',names=names,rolls=rolls,inTimes=inTimes,outTimes=outTimes,totalTimes=totalTimes,l=l,totalreg=totalreg(),datetoday2=datetoday2) 
-    else:
-        names,rolls,inTimes,outTimes,totalTimes,l = extract_attendance()    
-        return render_template('home.html',names=names,rolls=rolls,inTimes=inTimes,outTimes=outTimes,totalTimes=totalTimes,l=l,totalreg=totalreg(),datetoday2=datetoday2,mess='User ID has existed. Please type other ID.') 
+    if request.method == 'POST':
+        # Check if 'newusername' and 'newuserid' exist in form data
+        if 'newusername' in request.form and 'newuserid' in request.form:
+            newusername = request.form['newusername']
+            newuserid = request.form['newuserid']
 
+            if checkUserID(newuserid) == False:
+                userimagefolder = 'static/faces/' + newusername + '_' + str(newuserid)
+                if not os.path.isdir(userimagefolder):
+                    os.makedirs(userimagefolder)
+
+                cap = cv2.VideoCapture(0)
+                i, j = 0, 0
+                while 1:
+                    _, frame = cap.read()
+                    faces = extract_faces(frame)
+                    for (x, y, w, h) in faces:
+                        cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 20), 2)
+                        cv2.putText(frame, f'Images Captured: {i}/100', (30, 30), cv2.FONT_HERSHEY_SIMPLEX, 1,
+                                    (255, 0, 20), 2, cv2.LINE_AA)
+                        if j % 10 == 0:
+                            name = newusername + '_' + str(i) + '.jpg'
+                            cv2.imwrite(userimagefolder + '/' + name, frame[y:y + h, x:x + w])
+                            i += 1
+                        j += 1
+
+                    if j == 1000:
+                        break
+
+                    cv2.imshow('Adding new User', frame)
+                    if cv2.waitKey(1) == 27:
+                        break
+
+                cap.release()
+                cv2.destroyAllWindows()
+
+                print('Training Model')
+                train_model()
+
+                names, rolls, inTimes, outTimes, totalTimes, l = extract_attendance()
+                return render_template('addUser.html', names=names, rolls=rolls, inTimes=inTimes, outTimes=outTimes,
+                                       totalTimes=totalTimes, l=l, totalreg=totalreg(), datetoday2=datetoday2)
+
+            else:
+                names, rolls, inTimes, outTimes, totalTimes, l = extract_attendance()
+                return render_template('addUser.html', names=names, rolls=rolls, inTimes=inTimes, outTimes=outTimes,
+                                       totalTimes=totalTimes, l=l, totalreg=totalreg(), datetoday2=datetoday2,
+                                       mess='User ID already exists. Please choose another ID.')
+
+        else:
+            # Handle missing form fields gracefully
+            return "Invalid form submission. Please provide 'newusername' and 'newuserid'."
+
+    else:
+        # Handle GET request (e.g., render form)
+        return render_template('addUser.html', totalreg=totalreg(), datetoday2=datetoday2)
 
 
 #### Our main function which runs the Flask App
