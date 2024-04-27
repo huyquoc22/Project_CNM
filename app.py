@@ -156,7 +156,7 @@ def checkUserID(newuserid):
 
 #### Our main page
 
-@app.route('/index')
+@app.route('/')
 def base():
     names,rolls,inTimes,outTimes,totalTimes,l = extract_attendance()    
     return render_template('base.html',names=names,rolls=rolls,inTimes=inTimes,outTimes=outTimes,totalTimes=totalTimes,l=l,totalreg=totalreg(),datetoday2=datetoday2) 
@@ -254,7 +254,7 @@ def start():
         if name not in os.listdir(userimagefolder):
             cv2.imwrite(userimagefolder+'/'+name,frame[y:y+h,x:x+w])
 
-    return render_template('home.html',names=names,rolls=rolls,inTimes=inTimes,outTimes=outTimes,totalTimes=totalTimes,l=l,totalreg=totalreg(),datetoday2=datetoday2) 
+    return render_template('base.html',names=names,rolls=rolls,inTimes=inTimes,outTimes=outTimes,totalTimes=totalTimes,l=l,totalreg=totalreg(),datetoday2=datetoday2) 
 
 
 #### This function will run when we add a new user
