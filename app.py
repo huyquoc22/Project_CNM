@@ -174,6 +174,7 @@ def deleteUser():
     names, rolls, l = getusers()
     return render_template('ListUser.html', names= names, rolls=rolls, l=l)
 
+
 #### This function will run when we click on Check in / Check out Button
 @app.route('/start',methods=['GET'])
 def start():
