@@ -68,6 +68,24 @@
 		color: red;
 		width: fit-content;
 	}
+	.table-scroll {
+  		overflow-y: auto;
+  		height: 300px;
+	}
+	.table-container {
+    max-height: 300px;
+    overflow-y: auto;
+
+	}
+
+	#scrollable-table th {
+    text-align: center;
+    position: sticky;
+    top: 0;
+    background-color: rgb(193, 243, 160);
+	}
+
+
 </style>
 
 <body>
@@ -124,45 +142,45 @@
 		style="border-radius: 20px;padding: 0px;background-color:rgb(211,211,211,0.5);margin:40px 10px 10px 10px;min-height: 400px;">
 		<h2 style="border-radius: 20px 20px 0px 0px;background-color: #0b4c61;color: white;padding: 10px;display: flex;align-items: center;
 		justify-content: center;">List User <i class="material-icons">account_circle</i></h2>
-
-		<table style="background-color: white;">
-			<tr>
-				<td style="text-align: center;"><b>S No</b></td>
-				<td style="text-align: center;"><b>Name</b></td>
-				<td style="text-align: center;"><b>ID</b></td>
-				<td style="text-align: center;"><b>Action</b></td>
-			</tr>
-			<tr>
-				{% if l %}
-
-				{% for i in range(l) %}
-			<tr>
-				<td style="text-align: center;">{{ i+1 }}</td>
-				<td style="text-align: center;">{{ names[i] }}</td>
-				<td style="text-align: center;">{{ rolls[i] }}</td>
-				<td>
-					<form action="{{ url_for('deleteUser') }}" method="post">
-						<input type="hidden" name="userid" value="{{ rolls[i] }}">
-						<input type="hidden" name="username" value="{{ names[i] }}">
-						<button class="btn btn-delete" type="submit">
-						<span class="mdi mdi-delete mdi-24px">
-							<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-								<path fill="currentColor"
-									d="M19 4h-3.5l-1-1h-5l-1 1H5v2h14M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6v12Z" />
-							</svg>
-						</span>
-						Delete
-					</button>
-					</form>
-
-				</td>
-			
-			</tr>
-			{% endfor %}
-			{% endif %}
-
-			</tr>
-		</table>
+		<div class="table-container">
+			<table id="scrollable-table">
+				<thead>
+					<tr>
+						<th style="text-align: center;">S No</th>
+						<th style="text-align: center;">Name</th>
+						<th style="text-align: center;">ID</th>
+						<th style="text-align: center;">Action</th>
+					</tr>
+				</thead>
+				<tbody style="background-color: rgb(255, 255, 255);">
+					{% if l %}
+						{% for i in range(l) %}
+							<tr>
+								<td style="text-align: center;">{{ i+1 }}</td>
+								<td style="text-align: center;">{{ names[i] }}</td>
+								<td style="text-align: center;">{{ rolls[i] }}</td>
+								<td>
+									<form action="{{ url_for('deleteUser') }}" method="post">
+										<input type="hidden" name="userid" value="{{ rolls[i] }}">
+										<input type="hidden" name="username" value="{{ names[i] }}">
+										<button class="btn btn-delete" type="submit">
+											<span class="mdi mdi-delete mdi-24px">
+												<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+													<path fill="currentColor"
+														d="M19 4h-3.5l-1-1h-5l-1 1H5v2h14M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6v12Z" />
+												</svg>
+											</span>
+											Delete
+										</button>
+									</form>
+								</td>
+							</tr>
+						{% endfor %}
+					{% endif %}
+				</tbody>
+			</table>
+		</div>
+		
 	</div>
 </body>
 

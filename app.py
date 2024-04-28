@@ -66,12 +66,10 @@ def extract_faces(img):
     face_points = face_detector.detectMultiScale(gray, 1.3, 5)
     return face_points
 
-
 #### Identify face using ML model
 def identify_face(facearray):
     model = joblib.load('static/face_recognition_model.pkl')
     return model.predict(facearray)
-
 
 #### A function which trains the model on all the faces available in faces folder
 def train_model():
@@ -175,11 +173,6 @@ def login():
 
     return render_template('login.html', error=None)
 
-# @app.route('/home')
-# def home():
-#     names,rolls,inTimes,outTimes,totalTimes,l = extract_attendance()    
-#     return render_template('home.html',names=names,rolls=rolls,inTimes=inTimes,outTimes=outTimes,totalTimes=totalTimes,l=l,totalreg=totalreg(),datetoday2=datetoday2) 
-
 @app.route('/home')
 def home():
     if not session.get('logged_in'):
@@ -204,64 +197,117 @@ def deleteUser():
     userid = request.form['userid']
     username = request.form['username']
     delUser(userid, username)
-    train_model()
+    #train_model()
     names, rolls, l = getusers()
     return render_template('ListUser.html', names= names, rolls=rolls, l=l)
-
 
 #### This function will run when we click on Check in / Check out Button
 @app.route('/start',methods=['GET'])
 def start():
     if 'face_recognition_model.pkl' not in os.listdir('static'):
-        return render_template('home.html',totalreg=totalreg(),datetoday2=datetoday2,mess='There is no trained model in the static folder. Please add a new face to continue.') 
+        return render_template('base.html', totalreg=totalreg(), datetoday2=datetoday2, mess='There is no trained model in the static folder. Please add a new face to continue.') 
 
     cap = cv2.VideoCapture(0)
     ret = True
+    face_detected = False
+    identified_person = None
+
     while ret:
-        ret,frame = cap.read()
-        if len(extract_faces(frame))>0:
-            (x,y,w,h) = extract_faces(frame)[0]
-            cv2.rectangle(frame,(x, y), (x+w, y+h), (255, 0, 20), 2)
-            face = cv2.resize(frame[y:y+h,x:x+w], (50, 50))
-            identified_person = identify_face(face.reshape(1,-1))[0]
-            cv2.putText(frame,f'{identified_person}',(30,30),cv2.FONT_HERSHEY_SIMPLEX,1,(255, 0, 20),2,cv2.LINE_AA)
-        cv2.imshow('Attendance',frame)
-        if cv2.waitKey(1)==27:
+        ret, frame = cap.read()
+        faces = extract_faces(frame)
+
+        if len(faces) > 0:
+            (x, y, w, h) = faces[0]
+            cv2.rectangle(frame, (x, y), (x+w, y+h), (255, 0, 20), 2)
+            face = cv2.resize(frame[y:y+h, x:x+w], (50, 50))
+            identified_person = identify_face(face.reshape(1, -1))[0]
+            cv2.putText(frame, f'{identified_person}', (30, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 20), 2, cv2.LINE_AA)
+            face_detected = True
+
+        cv2.imshow('Attendance', frame)
+        if cv2.waitKey(1) == 27:
             break
+
     cap.release()
     cv2.destroyAllWindows()
-    add_attendance(identified_person)
 
-    print(identified_person)
-    
-    names,rolls,inTimes,outTimes,totalTimes,l = extract_attendance()    
+    if not face_detected:
+        print("No face detected.")
 
-    #Save attendance image
-    username = identified_person.split('_')[0]
-    userid = identified_person.split('_')[1]
-    userimagefolder = f'Attendance/Attendance_faces-{datetoday}/'+username+'_'+str(userid)+'_'+datetoday2
-    if not os.path.isdir(userimagefolder):
-        os.makedirs(userimagefolder)
-    inTime, outTime = getUserTime(userid)
+    if identified_person is not None:
+        add_attendance(identified_person)
 
-    print(inTime, outTime)
-    if inTime != 'nan':
-        name = username+'_'+userid+'_'+'checkin'+'.jpg'
-        if name not in os.listdir(userimagefolder):
-            cv2.imwrite(userimagefolder+'/'+name,frame[y:y+h,x:x+w])
-    if outTime != 'nan':
-        name = username+'_'+userid+'_'+'checkout'+'.jpg'
-        if name not in os.listdir(userimagefolder):
-            cv2.imwrite(userimagefolder+'/'+name,frame[y:y+h,x:x+w])
+        # Assuming extract_attendance() retrieves these values
+        names, rolls, inTimes, outTimes, totalTimes, l = extract_attendance()
 
-    return render_template('base.html',names=names,rolls=rolls,inTimes=inTimes,outTimes=outTimes,totalTimes=totalTimes,l=l,totalreg=totalreg(),datetoday2=datetoday2) 
+        # Check if all variables have values before rendering template
+        if names is not None and rolls is not None and inTimes is not None and outTimes is not None and totalTimes is not None and l is not None:
+            return render_template('base.html', names=names, rolls=rolls, inTimes=inTimes, outTimes=outTimes, totalTimes=totalTimes, l=l, totalreg=totalreg(), datetoday2=datetoday2)
+        else:
+            # Handle case where data is not available
+            return render_template('base.html', totalreg=totalreg(), datetoday2=datetoday2, mess='Attendance data not available.')
+    else:
+        # Handle case where no person was identified
+        return render_template('base.html', totalreg=totalreg(), datetoday2=datetoday2, mess='No person identified.')
 
+    # Handle default case
+    return render_template('base.html', totalreg=totalreg(), datetoday2=datetoday2, mess='Unknown error.')
+
+@app.route('/admin',methods=['GET'])
+def admin():
+    if 'face_recognition_model.pkl' not in os.listdir('static'):
+        return render_template('home.html', totalreg=totalreg(), datetoday2=datetoday2, mess='There is no trained model in the static folder. Please add a new face to continue.') 
+
+    cap = cv2.VideoCapture(0)
+    ret = True
+    face_detected = False
+    identified_person = None
+
+    while ret:
+        ret, frame = cap.read()
+        faces = extract_faces(frame)
+
+        if len(faces) > 0:
+            (x, y, w, h) = faces[0]
+            cv2.rectangle(frame, (x, y), (x+w, y+h), (255, 0, 20), 2)
+            face = cv2.resize(frame[y:y+h, x:x+w], (50, 50))
+            identified_person = identify_face(face.reshape(1, -1))[0]
+            cv2.putText(frame, f'{identified_person}', (30, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 20), 2, cv2.LINE_AA)
+            face_detected = True
+
+        cv2.imshow('Attendance', frame)
+        if cv2.waitKey(1) == 27:
+            break
+
+    cap.release()
+    cv2.destroyAllWindows()
+
+    if not face_detected:
+        print("No face detected.")
+
+    if identified_person is not None:
+        add_attendance(identified_person)
+
+        # Assuming extract_attendance() retrieves these values
+        names, rolls, inTimes, outTimes, totalTimes, l = extract_attendance()
+
+        # Check if all variables have values before rendering template
+        if names is not None and rolls is not None and inTimes is not None and outTimes is not None and totalTimes is not None and l is not None:
+            return render_template('home.html', names=names, rolls=rolls, inTimes=inTimes, outTimes=outTimes, totalTimes=totalTimes, l=l, totalreg=totalreg(), datetoday2=datetoday2)
+        else:
+            # Handle case where data is not available
+            return render_template('home.html', totalreg=totalreg(), datetoday2=datetoday2, mess='Attendance data not available.')
+    else:
+        # Handle case where no person was identified
+        return render_template('home.html', totalreg=totalreg(), datetoday2=datetoday2, mess='No person identified.')
+
+    # Handle default case
+    return render_template('home.html', totalreg=totalreg(), datetoday2=datetoday2, mess='Unknown error.')
 
 #### This function will run when we add a new user
 @app.route('/addUsers', methods=['GET', 'POST'])
 def add():
     if request.method == 'POST':
-        # Check if 'newusername' and 'newuserid' exist in form data
         if 'newusername' in request.form and 'newuserid' in request.form:
             newusername = request.form['newusername']
             newuserid = request.form['newuserid']
@@ -273,8 +319,13 @@ def add():
 
                 cap = cv2.VideoCapture(0)
                 i, j = 0, 0
+                face_detected = False
+
                 while 1:
-                    _, frame = cap.read()
+                    ret, frame = cap.read()
+                    if not ret:
+                        break
+
                     faces = extract_faces(frame)
                     for (x, y, w, h) in faces:
                         cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 20), 2)
@@ -284,8 +335,9 @@ def add():
                             name = newusername + '_' + str(i) + '.jpg'
                             cv2.imwrite(userimagefolder + '/' + name, frame[y:y + h, x:x + w])
                             i += 1
-                        j += 1
+                            face_detected = True
 
+                        j += 1
                     if j == 1000:
                         break
 
@@ -296,6 +348,9 @@ def add():
                 cap.release()
                 cv2.destroyAllWindows()
 
+                if not face_detected:
+                    delUser(newuserid, newusername)
+                    return render_template('addUser.html', totalreg=totalreg(), datetoday2=datetoday2, mess='No person identified.')
                 print('Training Model')
                 train_model()
 
@@ -307,18 +362,14 @@ def add():
                 names, rolls, inTimes, outTimes, totalTimes, l = extract_attendance()
                 return render_template('addUser.html', names=names, rolls=rolls, inTimes=inTimes, outTimes=outTimes,
                                        totalTimes=totalTimes, l=l, totalreg=totalreg(), datetoday2=datetoday2,
-                                       mess='User ID already exists. Please choose another ID.')
+                                       mess ='User ID already exists. Please choose another ID.')
 
         else:
-            # Handle missing form fields gracefully
             return "Invalid form submission. Please provide 'newusername' and 'newuserid'."
 
     else:
-        # Handle GET request (e.g., render form)
         return render_template('addUser.html', totalreg=totalreg(), datetoday2=datetoday2)
-
 
 #### Our main function which runs the Flask App
 if __name__ == '__main__':
     app.run(debug=True)
-    #app.run(host='0.0.0.0', port='6868')

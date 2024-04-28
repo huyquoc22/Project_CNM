@@ -36,6 +36,18 @@
     tr:nth-child(even) {
         background-color: #dddddd;
     }
+    .table-container {
+    max-height: 300px;
+    overflow-y: auto;
+	}
+
+    #scrollable-table th {
+    text-align: center;
+    position: sticky;
+    top: 0;
+    background-color: rgb(193, 243, 160);
+	}
+
 </style>
 
 
@@ -113,38 +125,43 @@
 
         <div class="col"
             style="border-radius: 20px;padding: 0px;background-color:rgb(211,211,211,0.5);margin:0px 10px 10px 10px;min-height: 400px;">
-            <h2 style="border-radius: 20px 20px 0px 0px;background-color: #0b4c61;color: white;padding: 10px;">Today's
+            <h2 style="border-radius: 20px 20px 0px 0px;background-color: #0b4c61;color: white;padding: 10px;display: flex;align-items: center;
+            justify-content: center;">Today's
                 Attendance <i class="material-icons">assignment</i></h2>
             <a style="text-decoration: none;max-width: 300px;" href="/start">
                 <button
-                    style="font-size: 24px;font-weight: bold;border-radius: 10px;width:490px;padding: 10px;margin-top: 30px;margin-bottom: 30px;"
+                    style="font-size: 24px;font-weight: bold;border-radius: 10px;width:490px;padding: 10px;margin-top: 0px;margin-bottom: 10px;"
                     type='submit' class='btn btn-primary'>Check in/Check out <i
                         class="material-icons">beenhere</i></button>
             </a>
-            <table style="background-color: white;">
-                <tr>
-                    <td><b>S No</b></td>
-                    <td><b>Name</b></td>
-                    <td><b>ID</b></td>
-                    <td><b>Check in time</b></td>
-                    <td><b>Check out time</b></td>
-                    <td><b>Total time</b></td>
-                </tr>
-                {% if l %}
-
-                {% for i in range(l) %}
-                <tr>
-                    <td>{{ i+1 }}</td>
-                    <td>{{ names[i] }}</td>
-                    <td>{{ rolls[i] }}</td>
-                    <td>{{ inTimes[i] }}</td>
-                    <td>{{ outTimes[i] }}</td>
-                    <td>{{ totalTimes[i] }}</td>
-                </tr>
-                {% endfor %}
-                {% endif %}
-            </table>
-
+            <div class="table-container">
+                <table id="scrollable-table">
+                    <thead>
+                        <tr>
+                            <th style="text-align: center;">S No</th>
+                            <th style="text-align: center;">Name</th>
+                            <th style="text-align: center;">ID</th>
+                            <th style="text-align: center;">Time In</th>
+                            <th style="text-align: center;">Time Out</th>
+                            <th style="text-align: center;">Total Time</th>
+                        </tr>
+                    </thead>
+                    <tbody style="background-color: rgb(255, 255, 255);">
+                        {% if l %}
+                            {% for i in range(l) %}
+                                <tr>
+                                    <td>{{ i+1 }}</td>
+                                    <td>{{ names[i] }}</td>
+                                    <td>{{ rolls[i] }}</td>
+                                    <td>{{ inTimes[i] }}</td>
+                                    <td>{{ outTimes[i] }}</td>
+                                    <td>{{ totalTimes[i] }}</td>
+                                </tr>
+                            {% endfor %}
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
