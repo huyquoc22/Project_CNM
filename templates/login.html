@@ -50,7 +50,9 @@
                         <input class="input100" type="password" name="password" placeholder="Password">
                         <!-- Xóa span data-placeholder -->
                     </div>
-
+                    {% if mess%}
+                    <p class="text-center" style="color: red;font-size: 20px;">{{ mess }}</p>
+                    {% endif %}
                     <div class="container-login100-form-btn">
                         <div class="wrap-login100-form-btn">
                             <div class="login100-form-bgbtn"></div>

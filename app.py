@@ -169,7 +169,7 @@ def login():
             session['logged_in'] = True  # Set the session variable to indicate login
             return redirect(url_for('home'))
         else:
-            return render_template('login.html', error='Invalid credentials')
+            return render_template('login.html', mess='Invalid credentials')
 
     return render_template('login.html', error=None)
 
