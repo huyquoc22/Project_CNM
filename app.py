@@ -87,7 +87,6 @@ def train_model():
     knn.fit(faces,labels)
     joblib.dump(knn,'static/face_recognition_model.pkl')
 
-
 #### Extract info from today's attendance file in attendance folder
 def extract_attendance():
     df = pd.read_csv(f'Attendance/Attendance-{datetoday}.csv')
@@ -153,12 +152,12 @@ def checkUserID(newuserid):
 ################## ROUTING FUNCTIONS #########################
 
 #### Our main page
-
 @app.route('/')
 def base():
     names,rolls,inTimes,outTimes,totalTimes,l = extract_attendance()    
     return render_template('base.html',names=names,rolls=rolls,inTimes=inTimes,outTimes=outTimes,totalTimes=totalTimes,l=l,totalreg=totalreg(),datetoday2=datetoday2) 
 
+#### Login Page
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -173,33 +172,35 @@ def login():
 
     return render_template('login.html', error=None)
 
+#### Home Admin Page
 @app.route('/home')
 def home():
     if not session.get('logged_in'):
         return redirect(url_for('login'))
-    # Continue with your normal route logic
     names, rolls, inTimes, outTimes, totalTimes, l = extract_attendance()
     return render_template('home.html', names=names, rolls=rolls, inTimes=inTimes, outTimes=outTimes,
                            totalTimes=totalTimes, l=l, totalreg=totalreg(), datetoday2=datetoday2)
 
+#### Logout function
 @app.route('/logout')
 def logout():
     session.pop('logged_in', None)  # Remove the 'logged_in' session variable
     return redirect(url_for('base'))
 
+#### List all users
 @app.route('/listUsers')
 def users():
     names, rolls, l = getusers()
     return render_template('ListUser.html', names= names, rolls=rolls, l=l)
 
+#### Delete user
 @app.route('/deletetUser', methods=['POST'])
 def deleteUser():
     userid = request.form['userid']
     username = request.form['username']
     delUser(userid, username)
-    #train_model()
     names, rolls, l = getusers()
-    return render_template('ListUser.html', names= names, rolls=rolls, l=l)
+    return render_template('ListUser.html', names= names, rolls=rolls, l=l, mess='Delete successfully.')
 
 #### This function will run when we click on Check in / Check out Button
 @app.route('/start',methods=['GET'])
@@ -245,10 +246,11 @@ def start():
             return render_template('base.html', names=names, rolls=rolls, inTimes=inTimes, outTimes=outTimes, totalTimes=totalTimes, l=l, totalreg=totalreg(), datetoday2=datetoday2)
         else:
             # Handle case where data is not available
-            return render_template('base.html', totalreg=totalreg(), datetoday2=datetoday2, mess='Attendance data not available.')
+            return render_template('base.html', names=names, rolls=rolls, inTimes=inTimes, outTimes=outTimes, totalTimes=totalTimes, l=l, totalreg=totalreg(), datetoday2=datetoday2, mess='Attendance data not available.')
     else:
         # Handle case where no person was identified
-        return render_template('base.html', totalreg=totalreg(), datetoday2=datetoday2, mess='No person identified.')
+        names, rolls, inTimes, outTimes, totalTimes, l = extract_attendance()
+        return render_template('base.html', names=names, rolls=rolls, inTimes=inTimes, outTimes=outTimes, totalTimes=totalTimes, l=l, totalreg=totalreg(), datetoday2=datetoday2, mess='No person identified.')
 
     # Handle default case
     return render_template('base.html', totalreg=totalreg(), datetoday2=datetoday2, mess='Unknown error.')
@@ -296,10 +298,11 @@ def admin():
             return render_template('home.html', names=names, rolls=rolls, inTimes=inTimes, outTimes=outTimes, totalTimes=totalTimes, l=l, totalreg=totalreg(), datetoday2=datetoday2)
         else:
             # Handle case where data is not available
-            return render_template('home.html', totalreg=totalreg(), datetoday2=datetoday2, mess='Attendance data not available.')
+            return render_template('home.html', names=names, rolls=rolls, inTimes=inTimes, outTimes=outTimes, totalTimes=totalTimes, l=l, totalreg=totalreg(), datetoday2=datetoday2, mess='Attendance data not available.')
     else:
         # Handle case where no person was identified
-        return render_template('home.html', totalreg=totalreg(), datetoday2=datetoday2, mess='No person identified.')
+        names, rolls, inTimes, outTimes, totalTimes, l = extract_attendance()
+        return render_template('home.html', names=names, rolls=rolls, inTimes=inTimes, outTimes=outTimes, totalTimes=totalTimes, l=l, totalreg=totalreg(), datetoday2=datetoday2, mess='No person identified.')
 
     # Handle default case
     return render_template('home.html', totalreg=totalreg(), datetoday2=datetoday2, mess='Unknown error.')
@@ -356,14 +359,13 @@ def add():
 
                 names, rolls, inTimes, outTimes, totalTimes, l = extract_attendance()
                 return render_template('addUser.html', names=names, rolls=rolls, inTimes=inTimes, outTimes=outTimes,
-                                       totalTimes=totalTimes, l=l, totalreg=totalreg(), datetoday2=datetoday2)
+                                       totalTimes=totalTimes, l=l, totalreg=totalreg(), datetoday2=datetoday2,mess1='Add successfully.')
 
             else:
                 names, rolls, inTimes, outTimes, totalTimes, l = extract_attendance()
                 return render_template('addUser.html', names=names, rolls=rolls, inTimes=inTimes, outTimes=outTimes,
                                        totalTimes=totalTimes, l=l, totalreg=totalreg(), datetoday2=datetoday2,
                                        mess ='User ID already exists. Please choose another ID.')
-
         else:
             return "Invalid form submission. Please provide 'newusername' and 'newuserid'."
 

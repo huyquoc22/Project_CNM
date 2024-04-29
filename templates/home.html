@@ -185,14 +185,10 @@
 <script>
     function confirmLogout() {
         if (confirm("Bạn có chắc chắn muốn đăng xuất không?")) {
-            window.location.href = "{{ url_for('logout') }}"; // Nếu người dùng đồng ý, thực hiện đăng xuất
+            window.location.href = "{{ url_for('logout') }}";
         } else {
-            // Người dùng không đồng ý, không thực hiện gì
             return false;
         }
     }
 </script>
-
-<button onclick="return confirmLogout();">Đăng Xuất</button>
-
 </html>
