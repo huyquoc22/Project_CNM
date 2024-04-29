@@ -117,7 +117,7 @@
         background-color: #f2f2f2;
         padding: 5px 10px;">Add User</a>
 
-        <a href="/logout" style="margin-right: 20px; 
+        <a href="javascript:void(0);" onclick="confirmLogout();" style="margin-right: 20px; 
         text-decoration: none; 
         margin-right: 3%;
         border-radius: 20px;
@@ -182,5 +182,17 @@
     </div>
 
 </body>
+<script>
+    function confirmLogout() {
+        if (confirm("Bạn có chắc chắn muốn đăng xuất không?")) {
+            window.location.href = "{{ url_for('logout') }}"; // Nếu người dùng đồng ý, thực hiện đăng xuất
+        } else {
+            // Người dùng không đồng ý, không thực hiện gì
+            return false;
+        }
+    }
+</script>
+
+<button onclick="return confirmLogout();">Đăng Xuất</button>
 
 </html>
