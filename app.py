@@ -40,6 +40,8 @@ if not os.path.isdir(f'Attendance/Attendance_faces-{datetoday}'):
     os.makedirs(f'Attendance/Attendance_faces-{datetoday}')
 
 
+
+
 #### get a number of total registered users
 def totalreg():
     return len(os.listdir('static/faces'))

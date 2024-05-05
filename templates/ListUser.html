@@ -163,19 +163,19 @@
 								<td style="text-align: center;">{{ names[i] }}</td>
 								<td style="text-align: center;">{{ rolls[i] }}</td>
 								<td>
-									<form action="{{ url_for('deleteUser') }}" method="post">
-										<input type="hidden" name="userid" value="{{ rolls[i] }}">
-										<input type="hidden" name="username" value="{{ names[i] }}">
-										<button class="btn btn-delete" type="submit">
-											<span class="mdi mdi-delete mdi-24px">
-												<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-													<path fill="currentColor"
-														d="M19 4h-3.5l-1-1h-5l-1 1H5v2h14M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6v12Z" />
-												</svg>
-											</span>
-											Delete
-										</button>
-									</form>
+									<form id="deleteForm{{ i }}" action="{{ url_for('deleteUser') }}" method="post">
+                                        <input type="hidden" name="userid" value="{{ rolls[i] }}">
+                                        <input type="hidden" name="username" value="{{ names[i] }}">
+										<button class="btn btn-delete" type="button" onclick="confirmDelete('{{i}}')">
+                                            <span class="mdi mdi-delete mdi-24px">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                                                    <path fill="currentColor"
+                                                        d="M19 4h-3.5l-1-1h-5l-1 1H5v2h14M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6v12Z" />
+                                                </svg>
+                                            </span>
+                                            Delete
+                                        </button>
+                                    </form>
 								</td>
 							</tr>
 						{% endfor %}
@@ -185,6 +185,19 @@
 		</div>
 		
 	</div>
+	<script>
+        function confirmDelete(index) {
+            var formId = "deleteForm" + index;
+            var form = document.getElementById(formId);
+            var username = form.elements["username"].value;
+            var confirmMessage = "Bạn có chắc muốn xóa nhân viên '" + username + "' không?";
+            if (confirm(confirmMessage)) {
+                form.submit();
+            } else {
+
+            }
+        }
+    </script>
 </body>
 
 </html>
